@@ -8,4 +8,6 @@ A way to cook up meth in a Journey van (skill minigame based). Requires you to b
 
 * [bl_ui](https://github.com/Byte-Labs-Project/bl_ui)
 * [ox_lib](https://github.com/overextended/ox_lib/releases/tag/v3.16.2)
-* [Preview](https://streamable.com/kz1bok)
+
+## Showcase
+* [Showcase](https://streamable.com/kz1bok)
