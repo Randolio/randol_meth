@@ -4,6 +4,8 @@ A way to cook up meth in a Journey van (skill minigame based). Requires you to b
 
 **NOTE**: I just used ingredients and stuff which I already had in my server. You'll need to adjust the items/amounts in the sv_meth.lua if you want. Do not ask me for support.
 
+ESX Fork: https://github.com/TheSmugGod/randol_meth_esx/tree/main (Thankyou TheSmugGod)
+
 ## Requirements
 
 * [bl_ui](https://github.com/Byte-Labs-Project/bl_ui)
