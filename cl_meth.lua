@@ -197,8 +197,14 @@ AddStateBagChangeHandler("methSmoke", nil, function(bagName, key, value, reserve
         return 
     end
 
+    if ptfx[entity] then
+        RemoveParticleFxFromEntity(entity)
+        ptfx[entity] = nil
+    end
+
     lib.requestNamedPtfxAsset("core", 1000)
     UseParticleFxAsset("core")
     ptfx[entity] = StartParticleFxLoopedOnEntityBone("exp_grd_bzgas_smoke", entity, 0.0, 0.13, 1.3, 0.0, 0.0, 0.0, GetEntityBoneIndexByName(entity, 'chassis'), 3.0, false, false, false)
     SetParticleFxLoopedAlpha(ptfx[entity], 10.0)
+    RemoveNamedPtfxAsset("core")
 end)
