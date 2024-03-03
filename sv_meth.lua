@@ -17,6 +17,20 @@ AddEventHandler('playerDropped', function()
     end
 end)
 
+local function itemCount(Player, item)
+    local count = 0
+    if GetResourceState('ox_inventory') == 'started' then 
+        count = exports.ox_inventory:GetItemCount(Player.PlayerData.source, item)
+    else
+        for slot, data in pairs(Player.PlayerData.items) do -- Apparently qb only counts the amount from the first slot so I gotta do this.
+            if data.name == item then
+                count += data.amount
+            end
+        end
+    end
+    return count
+end
+
 RegisterNetEvent('randol_methvan:server:beginMaking', function(netId)
     local src = source
     local entity = NetworkGetEntityFromNetworkId(netId)
@@ -27,11 +41,11 @@ RegisterNetEvent('randol_methvan:server:beginMaking', function(netId)
         return 
     end
 
-    local acetone = Player.Functions.GetItemByName('acetone') -- Player.Functions.GetItemByName cause easy support for both ox and qb.
-    local lithium = Player.Functions.GetItemByName('lithium')
-    local baggies = Player.Functions.GetItemByName('empty_weed_bag')
-
-    if acetone and acetone.amount > 0 and lithium and lithium.amount > 0 and baggies and baggies.amount >= bagAmounts.max then
+    local acetone = itemCount(Player, 'acetone')
+    local lithium = itemCount(Player, 'lithium')
+    local baggies = itemCount(Player, 'empty_weed_bag')
+    
+    if acetone > 0 and lithium > 0 and baggies >= bagAmounts.max then
         Player.Functions.RemoveItem('acetone', 1)
         Player.Functions.RemoveItem('lithium', 1)
         canContinue = true 
