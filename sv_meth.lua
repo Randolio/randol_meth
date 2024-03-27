@@ -37,7 +37,15 @@ RegisterNetEvent('randol_methvan:server:beginMaking', function(netId)
     local canContinue = false
     local Player = QBCore.Functions.GetPlayer(src)
 
-    if methMakers[src] or not DoesEntityExist(entity) or GetEntityModel(entity) ~= `journey` then 
+    local allowed = false
+    for _, model in ipairs(Config.AllowedVehicles) do
+        if GetEntityModel(entity) == GetHashKey(model) then
+            allowed = true
+            break
+        end
+    end
+
+    if methMakers[src] or not DoesEntityExist(entity) or not allowed then 
         return 
     end
 
