@@ -15,4 +15,10 @@ Config = {
         [80] = { circles = 7, speed = 70, },
         [90] = { circles = 7, speed = 80, },
     },
+    AllowedVehicles = {
+        '60vwbus',
+        'journey',
+        'journey2',
+        -- Add more vehicle models here, if necessary
+    },
 }
