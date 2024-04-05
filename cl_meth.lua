@@ -1,4 +1,4 @@
-local PlayerData = {}
+local Config = lib.require('shared')
 local cacheProd = {}
 local ptfx = {}
 local makingMeth = false
@@ -7,8 +7,8 @@ local minigame = exports.bl_ui
 
 local function updateTextUI(bool)
     if bool then
-        local text = ('**Progress**: %s%s  \n **Mistakes**: %s'):format(cacheProd.progress, '%', cacheProd.mistakes)
-        lib.showTextUI(text, { position = "left-center", } )
+        local text = ('**Progress**: %s%s  \n**Mistakes**: %s'):format(cacheProd.progress, '%', cacheProd.mistakes)
+        lib.showTextUI(text, { position = 'left-center', } )
     else
         lib.hideTextUI()
     end
@@ -54,7 +54,7 @@ local function toggleCam(bool)
         local x, y, z = coords.x + GetEntityForwardX(cache.ped) * 0.9, coords.y + GetEntityForwardY(cache.ped) * 0.9, coords.z + 0.92
         local rot = GetEntityRotation(cache.ped, 2)
         local camRotation = rot + vector3(0.0, 0.0, 175.0)
-        cam = CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", x, y, z, camRotation, 70.0)
+        cam = CreateCamWithParams('DEFAULT_SCRIPTED_CAMERA', x, y, z, camRotation, 70.0)
         SetCamActive(cam, true)
         RenderScriptCams(true, true, 1000, 1, 1)
     else
@@ -85,43 +85,29 @@ local function cancelProd()
     updateTextUI(false)
 end
 
-local function addRadialEvent()
+local function listenForAction()
     if GetEntityModel(cache.vehicle) ~= `journey` then return end
-    
-    if Config.UseOxRadial then
-        lib.addRadialItem({
-            id = 'methvan',
-            icon = 'biohazard',
-            label = 'Make Meth',
-            onSelect = function()
-                TriggerEvent('randol_methvan:radial')
+
+    lib.showTextUI('Press **E** to Make Meth', { position = 'left-center', } )
+    Wait(500)
+    CreateThread(function()
+        while cache.seat == 1 do
+            if IsControlJustReleased(0, 38) and not makingMeth then
+                TriggerServerEvent('randol_methvan:server:beginMaking', NetworkGetNetworkIdFromEntity(cache.vehicle))
             end
-        })
-    else
-        exports['qb-radialmenu']:AddOption({
-            id = 'methvan',
-            icon = 'biohazard',
-            title = 'Make Meth',
-            type = "client",
-            event = 'randol_methvan:radial',
-            shouldClose = true
-        }, 'methvan')
-    end
+            Wait(0)
+        end
+        lib.hideTextUI()
+    end)
 end
 
-local function clearRadialEvent()
-    if Config.UseOxRadial then
-        lib.removeRadialItem('methvan')
-    else
-        exports['qb-radialmenu']:RemoveOption('methvan')
-    end
-
+local function listenForSeatSwitch()
     if not makingMeth then return end
 
     local success = lib.callback.await('randol_methvan:server:cancelProduction', false)
     if success then
         cancelProd()
-        QBCore.Functions.Notify("Production was stopped.", "error")
+        DoNotification('Production was stopped.', 'error')
     end
 end
 
@@ -140,71 +126,50 @@ RegisterNetEvent('randol_methvan:client:explodeFinish', function()
     if GetInvokingResource() then return end
     cancelProd()
     Wait(100)
-    QBCore.Functions.Notify("Production was stopped.", "error")
+    DoNotification('Production was stopped.', 'error')
     local vehicle = cache.vehicle
     SetEntityVelocity(vehicle, 0.0, 0.0, 5.0)
     NetworkExplodeVehicle(vehicle, true, false)
 end)
 
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
-    PlayerData = val
-end)
-
-AddEventHandler('onResourceStart', function(resourceName)
-    if GetCurrentResourceName() == resourceName then
-        PlayerData = QBCore.Functions.GetPlayerData()
-    end
-end)
-
-AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
-    PlayerData = QBCore.Functions.GetPlayerData()
-end)
-
-AddEventHandler('randol_methvan:radial', function()
-    if makingMeth then return end
-    TriggerServerEvent('randol_methvan:server:beginMaking', NetworkGetNetworkIdFromEntity(cache.vehicle))
-end)
-
-AddEventHandler('baseevents:onPlayerDied', function()
-    if makingMeth then
-        local success = lib.callback.await('randol_methvan:server:cancelProduction', false)
-        if success then
-            cancelProd()
-            QBCore.Functions.Notify("Production was stopped.", "error")
+AddEventHandler('gameEventTriggered', function(event, data)
+    if event == 'CEventNetworkEntityDamage' then
+        local victim, attacker, victimDied, weapon = data[1], data[2], data[4], data[7]
+        if not IsPedAPlayer(victim) then return end
+        if victimDied and NetworkGetPlayerIndexFromPed(victim) == cache.playerId and (IsPedDeadOrDying(victim, true) or IsPedFatallyInjured(victim)) and LocalPlayer.state.heistActive then
+            if makingMeth then
+                local success = lib.callback.await('randol_methvan:server:cancelProduction', false)
+                if success then
+                    cancelProd()
+                    DoNotification('Production was stopped.', 'error')
+                end
+            end
         end
     end
 end)
 
-RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    table.wipe(PlayerData)
-end)
-
 lib.onCache('seat', function(seat)
     if seat == 1 then
-        addRadialEvent()
+        listenForAction()
     else
-        clearRadialEvent()
+        listenForSeatSwitch()
     end
 end)
 
-AddStateBagChangeHandler("methSmoke", nil, function(bagName, key, value, reserved, replicated)
+AddStateBagChangeHandler('methSmoke', nil, function(bagName, key, value, reserved, replicated)
     local entity = GetEntityFromStateBagName(bagName)
     if not entity or not DoesEntityExist(entity) then return end
-
-    if not value then
-        RemoveParticleFxFromEntity(entity)
-        ptfx[entity] = nil
-        return 
-    end
 
     if ptfx[entity] then
         RemoveParticleFxFromEntity(entity)
         ptfx[entity] = nil
     end
 
-    lib.requestNamedPtfxAsset("core", 1000)
-    UseParticleFxAsset("core")
-    ptfx[entity] = StartParticleFxLoopedOnEntityBone("exp_grd_bzgas_smoke", entity, 0.0, 0.13, 1.3, 0.0, 0.0, 0.0, GetEntityBoneIndexByName(entity, 'chassis'), 3.0, false, false, false)
-    SetParticleFxLoopedAlpha(ptfx[entity], 10.0)
-    RemoveNamedPtfxAsset("core")
+    if value then
+        lib.requestNamedPtfxAsset('core', 5000)
+        UseParticleFxAsset('core')
+        ptfx[entity] = StartParticleFxLoopedOnEntityBone('exp_grd_bzgas_smoke', entity, 0.0, 0.13, 1.3, 0.0, 0.0, 0.0, GetEntityBoneIndexByName(entity, 'chassis'), 3.0, false, false, false)
+        SetParticleFxLoopedAlpha(ptfx[entity], 10.0)
+        RemoveNamedPtfxAsset('core')
+    end
 end)

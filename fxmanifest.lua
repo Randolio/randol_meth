@@ -10,10 +10,12 @@ shared_scripts {
 }
 
 client_scripts {
+    'bridge/client/**.lua',
     'cl_meth.lua'
 }
 
 server_scripts { 
+    'bridge/server/**.lua',
     'sv_meth.lua' 
 }
 

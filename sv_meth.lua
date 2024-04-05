@@ -17,37 +17,23 @@ AddEventHandler('playerDropped', function()
     end
 end)
 
-local function itemCount(Player, item)
-    local count = 0
-    if GetResourceState('ox_inventory') == 'started' then 
-        count = exports.ox_inventory:GetItemCount(Player.PlayerData.source, item)
-    else
-        for slot, data in pairs(Player.PlayerData.items) do -- Apparently qb only counts the amount from the first slot so I gotta do this.
-            if data.name == item then
-                count += data.amount
-            end
-        end
-    end
-    return count
-end
-
 RegisterNetEvent('randol_methvan:server:beginMaking', function(netId)
     local src = source
     local entity = NetworkGetEntityFromNetworkId(netId)
     local canContinue = false
-    local Player = QBCore.Functions.GetPlayer(src)
+    local player = GetPlayer(src)
 
     if methMakers[src] or not DoesEntityExist(entity) or GetEntityModel(entity) ~= `journey` then 
         return 
     end
 
-    local acetone = itemCount(Player, 'acetone')
-    local lithium = itemCount(Player, 'lithium')
-    local baggies = itemCount(Player, 'empty_weed_bag')
+    local acetone = itemCount(player, 'acetone')
+    local lithium = itemCount(player, 'lithium')
+    local baggies = itemCount(player, 'empty_weed_bag')
     
     if acetone > 0 and lithium > 0 and baggies >= bagAmounts.max then
-        Player.Functions.RemoveItem('acetone', 1)
-        Player.Functions.RemoveItem('lithium', 1)
+        RemoveItem(player, 'acetone', 1)
+        RemoveItem(player, 'lithium', 1)
         canContinue = true 
     end
 
@@ -56,7 +42,7 @@ RegisterNetEvent('randol_methvan:server:beginMaking', function(netId)
         Entity(entity).state:set('methSmoke', true, true)
         TriggerClientEvent('randol_methvan:client:startProd', src, methMakers[src])
     else
-        QBCore.Functions.Notify(src, "You are missing ingredients for this.", "error")
+        DoNotification(src, "You are missing ingredients for this.", "error")
     end
 end)
 
@@ -68,18 +54,18 @@ lib.callback.register('randol_methvan:server:updateProg', function(source, netId
 
     if entity ~= methMakers[src].vehicle then return false end
     
-    local Player = QBCore.Functions.GetPlayer(src)
+    local player = GetPlayer(src)
     local newProg = math.random(progressionGain.min, progressionGain.max)
     methMakers[src].progress += newProg
 
     if methMakers[src].progress >= 100 then
         methMakers[src] = nil
         local bags = math.random(bagAmounts.min, bagAmounts.max)
-        local baggies = Player.Functions.GetItemByName('empty_weed_bag')
+        local baggies = itemCount('empty_weed_bag')
         if baggies and baggies.amount >= bags then
-            Player.Functions.RemoveItem('empty_weed_bag', bags)
-            Player.Functions.AddItem('meth', bags)
-            QBCore.Functions.Notify(src, ('You cooked up a batch of %s bags'):format(bags), 'success')
+            RemoveItem(player, 'empty_weed_bag', bags)
+            AddItem(player, 'meth', bags)
+            DoNotification(src, ('You cooked up a batch of %s bags'):format(bags), 'success')
         end
         TriggerClientEvent('randol_methvan:client:finishProd', src)
         Entity(entity).state:set('methSmoke', nil, true)

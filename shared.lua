@@ -1,8 +1,5 @@
-QBCore = exports['qb-core']:GetCoreObject()
-
-Config = {
+return {
     ProductionInterval = 45000, -- 45 seconds between each minigame cycle.
-    UseOxRadial = true, -- if false, will call for qb-radialmenu
     Minigames = { -- percentage based and rounded to the nearest threshold.
         [0] = { circles = 2, speed = 50, },
         [10] = { circles = 3, speed = 50, },
