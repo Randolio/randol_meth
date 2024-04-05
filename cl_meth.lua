@@ -53,7 +53,7 @@ local function toggleCam(bool)
         local coords = GetEntityCoords(cache.ped)
         local x, y, z = coords.x + GetEntityForwardX(cache.ped) * 0.9, coords.y + GetEntityForwardY(cache.ped) * 0.9, coords.z + 0.92
         local rot = GetEntityRotation(cache.ped, 2)
-        local camRotation = rot + vector3(0.0, 0.0, 175.0)
+        local camRotation = rot + vec3(0.0, 0.0, 175.0)
         cam = CreateCamWithParams('DEFAULT_SCRIPTED_CAMERA', x, y, z, camRotation, 70.0)
         SetCamActive(cam, true)
         RenderScriptCams(true, true, 1000, 1, 1)
