@@ -28,19 +28,19 @@ function GetCharacterName(player)
     return player?.fullname
 end
 
-function AddItem(player item, amount)
+function AddItem(player, item, amount)
     exports.ox_inventory:AddItem(player.source, item, amount)
 end
 
-function RemoveItem(player item, amount)
+function RemoveItem(player, item, amount)
     exports.ox_inventory:RemoveItem(player.source, item, amount)
 end
 
-function AddMoney(player moneyType, amount)
+function AddMoney(player, moneyType, amount)
     player.addMoney(moneyType, amount)
 end
 
-function itemCount(player item)
+function itemCount(player, item)
     local count = exports.ox_inventory:GetItemCount(player.source, item)
     return count
 end
