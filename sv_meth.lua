@@ -61,7 +61,7 @@ lib.callback.register('randol_methvan:server:updateProg', function(source, netId
     if methMakers[src].progress >= 100 then
         methMakers[src] = nil
         local bags = math.random(bagAmounts.min, bagAmounts.max)
-        local baggies = itemCount('empty_weed_bag')
+        local baggies = itemCount(player, 'empty_weed_bag')
         if baggies and baggies.amount >= bags then
             RemoveItem(player, 'empty_weed_bag', bags)
             AddItem(player, 'meth', bags)
