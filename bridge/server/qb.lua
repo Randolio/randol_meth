@@ -61,6 +61,6 @@ function itemCount(Player, item)
 end
 
 function itemLabel(item)
-    local label = ox_inv and exports.ox_inventory:Items()[item].label or QBCore.Shared.Items[item].label
+    local label = ox_inv and exports.ox_inventory:Items(item).label or QBCore.Shared.Items[item].label
     return label
 end
