@@ -11,3 +11,5 @@ A way to cook up meth in a Journey van (skill minigame based). Requires you to b
 
 ## Showcase
 * [Showcase](https://streamable.com/kz1bok) **OUTDATED, THIS NO LONGER USES RADIAL MENU, JUST A KEY PRESS [E]**
+
+**You have permission to use this in your server and edit for your personal needs but are not allowed to redistribute.**
